@@ -5,4 +5,5 @@ urlpatterns=[
     path("",views.home,name="home"),
     #путь к функции home() из файла views
     path("about/",views.about,name="about"),
+    path("add/",views.add_consumable, name='add_consumable'),
 ]

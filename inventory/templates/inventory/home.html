@@ -1,9 +1,33 @@
 {% extends "inventory/base.html" %}
 
-{% block title %}О проекте — Учёт расходников{% endblock %}
+{% block title %}Главная — Учёт расходников{% endblock %}
 
 {% block content %}
-<h1>Состема учета расходников</h1>
-<p>Здесь в можете отслеживать остатки,выдавать материалы и вести историю.</p>
-<p>Сегодня: {{ current_date }}</p>
+<h1>Список расходников</h1>
+
+{% if consumables %}
+  <div class="row">
+    {% for item in consumables %}
+      <div class="col-md-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Наименование :{{ item.name }}</h5>
+            <p class="card-text">
+              <strong>Количество:</strong> {{ item.quantity }}<br>
+              <strong>Модификация:</strong> {{ item.modification }}<br>
+              {% if item.description %}
+                <strong>Описание:</strong> {{ item.description }}
+              {% else %}
+                <em>Без описания</em>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">Нет расходников. Добавьте их через <a href="/admin/inventory/consumable/">админку</a>.</p>
+{% endif %}
+
 {% endblock %}

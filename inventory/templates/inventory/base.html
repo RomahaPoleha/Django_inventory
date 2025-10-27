@@ -12,6 +12,7 @@
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">Расходники</a>
             <div class="navbar-nav">
+                <a class ='nav-link' href="{% url 'add_consumable' %}">Добавить</a>
                 <a class="nav-link" href="{% url 'home' %}">Главная</a>
                 <a class="nav-link" href="{% url 'about' %}">О проекте</a>
             </div>
@@ -19,6 +20,11 @@
     </nav>
 
     <div class="container mt-4">
+        {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endfor %}
+{% endif %}
         {% block content %}
         {% endblock %}
     </div>
