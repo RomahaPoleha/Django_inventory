@@ -1,0 +1,30 @@
+{% extends "inventory/base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<h2>Войти в систему</h2>
+
+<!-- Сообщения об ошибках (если неправильный логин/пароль) -->
+{% if form.errors %}
+  <div class="alert alert-danger">
+    Неверное имя пользователя или пароль.
+  </div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label>Имя пользователя:</label>
+    {{ form.username }}
+  </div>
+  <div class="mb-3">
+    <label>Пароль:</label>
+    {{ form.password }}
+  </div>
+  <button type="submit" class="btn btn-primary">Войти</button>
+  <input type="hidden" name="next" value="{{ next }}">
+</form>
+
+<p><a href="{% url 'home' %}">← Назад на главную</a></p>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Consumable
+from .models import Consumable,Request
 
 """Подключение админки для отоброжения БД"""
 @admin.register(Consumable) #Декоратор, который регистрирует модель Consumable в административной панели Django.
@@ -8,3 +8,8 @@ class ConsumableAdmin(admin.ModelAdmin):
     list_filter = ('modification',) # Добавляет боковую панель фильтров в админке.
     search_fields = ('name','description') # Это включает поисковую строку в верхней части списка, позволяя искать записи по полям name и description.
     ordering = ('name',) # Задаёт стандартную сортировку записей в списке админки — по полю name по возрастанию.
+
+@admin.register(Request)
+class RequestAdmin(admin.ModelAdmin):
+    list_display = ('consumable', 'requested_by','quantity',  'created_at')
+    ordering = ('created_at',)

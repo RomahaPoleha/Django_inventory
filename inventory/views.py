@@ -1,11 +1,14 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime
-from .models import Consumable
-from .forms import ConsumableForm
+from .models import Consumable, Request
+from .forms import ConsumableForm, RequestForm
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.core.exeption import PermissionDenied
+
 
 def home(request): #принимающее объект request (HTTP-запрос от пользователя).
     query = request.GET.get('q', '').strip() # Получает значение параметра q из GET-запроса
@@ -32,7 +35,7 @@ def home(request): #принимающее объект request (HTTP-запро
 def about(request):
     return render(request,"inventory/about.html") #Рендеринг = превращение шаблона + данных → в готовую HTML-страницу.
 
-#Функция для добавления
+@login_required
 def add_consumable(request):
     if request.method =='POST':# Проверяет, был ли запрос отправлен методом POST (то есть пользователь нажал кнопку «Отправить» в форме).
         form=ConsumableForm(request.POST)  # Создаёт экземпляр формы ConsumableForm, заполняя её данными из POST-запроса (request.POST).
@@ -47,6 +50,7 @@ def add_consumable(request):
 
     return render(request, 'inventory/add_consumable.html',{'form':form})
 
+@login_required
 #Функция для редактирования
 def edit_consumable(request,pk): #pk — первичный ключ (id) редактируемого объекта, переданный из URL
     consumable=get_object_or_404(Consumable,pk=pk) #Пытается найти в базе данных объект Consumable с указанным pk(Если не найден — автоматически возвращает ошибку 404)
@@ -62,6 +66,7 @@ def edit_consumable(request,pk): #pk — первичный ключ (id) ред
         form =ConsumableForm(instance=consumable)
     return render(request,'inventory/edit_consumable.html', {'form': form, 'consumable': consumable})
 
+@login_required
 #Функция для удаления
 def delete_consumable(request,pk):
     consumable=get_object_or_404(Consumable,pk=pk)
@@ -71,3 +76,38 @@ def delete_consumable(request,pk):
         messages.success(request, f"Расходник {name} успешно удалён!")
         return redirect("home")
     return render(request,'inventory/delete_consumable.html', {'consumable': consumable})
+
+@login_required
+def create_request(request,consumable_id):
+    consumable = get_object_or_404(Consumable, id=consumable_id)
+    if request.method=="POST":
+        form=RequestForm(request.POST)
+        if form.is_valid():
+            request_obj=form.save(commit=False)
+            request_obj.consumable=consumable
+            request_obj.requested_by=request.user
+            request_obj.save()
+            messages.success(request, f"Запрос успешно отправлен")
+        return render(request, 'inventory/request_form.html', {'form': form, 'consumable': consumable})
+    else:
+        form=RequestForm()
+        return render(request, 'inventory/request_form.html', {'form': form, 'consumable': consumable})
+
+
+def issue_requests(request):
+    if not request.user.is_staff:
+            raise PermissionDenied
+    pending_requests = Request.objects.filter(status='pending').order_by('-created_at')
+    context={"request_obj":pending_requests}
+
+    return render(request, 'inventory/issue_requests.html', context)
+
+
+def issue_request(request,request_id):
+    issue_request_obj = get_object_or_404(Request, id=request_id)
+    if request.method=="POST":
+        request.Сonsumable.quantity>=request.quantity
+        сonsumable.quantity-=request.quantity
+        status='issued'
+        consumable.save()
+        request.save()

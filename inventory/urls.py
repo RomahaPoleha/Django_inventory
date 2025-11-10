@@ -8,4 +8,6 @@ urlpatterns=[
     path("add/",views.add_consumable, name='add_consumable'), # Подключение пути
     path('edit/<int:pk>/', views.edit_consumable, name='edit_consumable'),  # Подключение пути
     path('delete/<int:pk>/', views.delete_consumable, name='delete_consumable'), # Подключение пути
+    path('create_request/<int:consumable_id>/', views.create_request, name='create_request'), # Подключение пути
+    path('requests/',views.issue_requests,name='issue_requests'),
 ]
