@@ -3,7 +3,7 @@
 {% block title %}Запрос расходника{% endblock %}
 
 {% block content %}
-  <h1>Запрос "{{consumable.name}}" {{ consumable.model }}"</h1>
+  <h1>Запрос {{consumable.name}} {{ consumable.model }}"</h1>
 
   <form method="post">
     {% csrf_token %}
@@ -14,7 +14,7 @@
         <div class="text-danger">{{ form.quantity.errors }}</div>
       {% endif %}
     </div>
-    <button type="submit" class="btn btn-success">Сделать запрос</button>
-    <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+    <button type="submit" class="btn btn-success">Запросить</button>
+    <a href="{% url 'consumables_list' %}" class="btn btn-secondary">Отмена</a>
   </form>
 {% endblock %}

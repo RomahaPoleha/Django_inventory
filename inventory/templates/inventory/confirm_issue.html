@@ -2,7 +2,7 @@
 {% block content %}
   <h2>Подтверждение выдачи</h2>
   <p>Выдать <strong>{{ issue.quantity }}</strong> {{ issue.consumable.unit }} 
-     расходника «<strong>{{ issue.consumable.name }}</strong>» 
+     наименование «<strong>{{ issue.consumable.name }}</strong>»
      пользователю <strong>{{ issue.requested_by.username }}</strong>?</p>
 
   <form method="post">

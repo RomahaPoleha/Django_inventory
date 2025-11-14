@@ -1,0 +1,12 @@
+{% extends "inventory/base.html" %}
+
+{% block title %}Выбор раздела{% endblock %}
+
+{% block content %}
+  <h1>Выбирите нужный вам раздел</h1>
+  <div class="list-group">
+    <a href="{% url 'consumables_list' %}" class="list-group-item list-group-item-action"> Ремонт оборудования </a>
+    <a href="#" class="list-group-item list-group-item-action">Расходные материалы для монтажа</a>
+    <a href="#" class="list-group-item list-group-item-action">Комплекты</a>
+  </div>
+{% endblock %}

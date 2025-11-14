@@ -22,7 +22,7 @@ def home(request): #принимающее объект request (HTTP-запро
         consumables = Consumable.objects.all().order_by('name') # Если запрос пустой — загружает все расходники, отсортированные по имени.
 
     #Пагинация 5 записей на страницу
-    paginator=Paginator(consumables,5)
+    paginator=Paginator(consumables,10)
     page_number=request.GET.get("page")
     page_obj=paginator.get_page(page_number)
 
@@ -43,7 +43,7 @@ def add_consumable(request):
         if form.is_valid(): # Проверяет, корректны ли данные в форме
             form.save() # Сохраняет данные формы как новую запись в базе данных
             messages.success(request, f"Расходник  успешно добавлен!") #всплывающее уведомление об успехе
-            return redirect('home') #Перенапровляем на главную (что-бы избежать повторной отправки формы
+            return redirect('consumables_list') #Перенапровляем на главную (что-бы избежать повторной отправки формы
         else:
             messages.error(request,"Пожалуйста исправьте ошибки в форме.") #Если форма не корректна, показывает ошибку в форме
     else:
@@ -60,7 +60,7 @@ def edit_consumable(request,pk): #pk — первичный ключ (id) ред
         if form.is_valid():
             messages.success(request, f"Расходник {consumable.name} успешно обновлён!")
             form.save() # Сохраняет изменения в базу данных (обновляет существующую запись).
-            return redirect("home")
+            return redirect("consumables_list")
         else:
             messages.error(request,"Не удалось сохранить изменения. Проверьте данные.") # Если форма некорректна, показывает сообщение об ошибке. Пользователь останется на странице редактирования, и форма отобразится с ошибками.
     else:
@@ -75,7 +75,7 @@ def delete_consumable(request,pk):
         name=consumable.name
         consumable.delete()
         messages.success(request, f"Расходник {name} успешно удалён!")
-        return redirect("home")
+        return redirect("consumables_list")
     return render(request,'inventory/delete_consumable.html', {'consumable': consumable})
 
 @login_required

@@ -2,16 +2,16 @@
 
 
 {% block content %}
-  <h1> Запросы на выдачу "</h1>
+  <h1> Активные запросы </h1>
 
 
 {% for pending_request in pending_requests %}
   <div class="card mb-3">
     <div class="card-body">
       <h5>Запрос от {{ pending_request.requested_by.username }}</h5>
-      <p><strong>Расходник:</strong> {{ pending_request.consumable.name }}</p>
+      <p><strong>Наименование:</strong> {{ pending_request.consumable.name }}</p>
       <p><strong>Количество:</strong> {{ pending_request.quantity }}</p>
-      <p><small>Создан: {{ pending_request.created_at|date:"d.m.Y H:i" }}</small></p>
+      <p><small>Дата запроса: {{ pending_request.created_at|date:"d.m.Y H:i" }}</small></p>
       <a href="{% url 'issue_request' pending_request.id %}" class="btn btn-success">Выдать</a>
     </div>
   </div>
