@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -39,7 +40,8 @@ class Request(models.Model):
     requested_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name="Запросил"
+        verbose_name="Запросил",
+        related_name='created_requests'
     )
 
     # Поле для хранения количества запрошенного расходника.
@@ -55,3 +57,25 @@ class Request(models.Model):
         choices=[('pending','Ожидает'),('issued','Выдано')],
         default='pending'
     )
+    issued_by= models.ForeignKey(User,
+                                 on_delete=models.SET_NULL,
+                                 null=True,blank=True,
+                                 related_name='handled_requests' )
+    class Meta:
+        verbose_name="Оборудовние" # Задаёт человекочитаемое название модели в единственном числе(админка)
+        verbose_name_plural="Запросы на выдачу" #Задаёт человекочитаемое название модели в единственном числе(админка)
+
+class Issue(models.Model):
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, verbose_name="Расходник")
+    issued_to = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Получил")
+    quantity = models.PositiveIntegerField("Количество")
+    issued_at = models.DateTimeField("Выдан", auto_now_add=True)
+    issued_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='issues_made', verbose_name="Кто выдал")
+
+    def __str__(self):
+        return f"{self.quantity} шт. '{self.consumable.name}' выдано {self.issued_to.username}"
+
+    class Meta:
+        verbose_name = "Выдача"
+        verbose_name_plural = "Выдачи"
+        ordering = ['-issued_at']  # новые выдачи сверху

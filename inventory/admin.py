@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Consumable,Request
+from .models import Consumable, Request, Issue
 
 """Подключение админки для отоброжения БД"""
 @admin.register(Consumable) #Декоратор, который регистрирует модель Consumable в административной панели Django.
@@ -11,5 +11,12 @@ class ConsumableAdmin(admin.ModelAdmin):
 
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('consumable', 'requested_by','quantity',  'created_at')
+    list_display = ('consumable', 'requested_by','quantity', 'created_at')
     ordering = ('created_at',)
+
+@admin.register(Issue)
+class IssueAdmin(admin.ModelAdmin):
+    list_display = ('consumable', 'issued_to','quantity','issued_at', 'issued_by')
+    list_filter = ('issued_at', 'consumable')
+    search_fields = ('issued_to__username', 'consumable__name')
+    readonly_fields = ('issued_at',) #чтобы нельзя было случайно изменить дату

@@ -1,13 +1,13 @@
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404 # render отображает шаблон, redirect -перенаправляет после Post
 from datetime import datetime
-from .models import Consumable, Request
+from .models import Consumable, Request # Мои модели из текущего приложения.
 from .forms import ConsumableForm, RequestForm
-from django.contrib import messages
+from django.contrib import messages #Система flash-сообщений: «Выдано!», «Ошибка!».
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.contrib.auth.decorators import login_required
-from django.core.exeption import PermissionDenied
+from django.contrib.auth.decorators import login_required, user_passes_test #user_passes_test - встроенный декоратор Django для проверки произвольного условия на пользователе.
+from django.core.exceptions import PermissionDenied
 
 
 def home(request): #принимающее объект request (HTTP-запрос от пользователя).
@@ -32,8 +32,9 @@ def home(request): #принимающее объект request (HTTP-запро
         "current_date":datetime.now().strftime("%d.%m.%Y")}
     return render(request, "inventory/home.html",context) #Возвращает HTTP-ответ, рендеря шаблон inventory/home.html с переданным контекстом.
 
-def about(request):
-    return render(request,"inventory/about.html") #Рендеринг = превращение шаблона + данных → в готовую HTML-страницу.
+#Главная страница
+def section_selection(request):
+    return render(request,"inventory/section_selection.html") #Рендеринг = превращение шаблона + данных → в готовую HTML-страницу.
 
 @login_required
 def add_consumable(request):
@@ -98,16 +99,41 @@ def issue_requests(request):
     if not request.user.is_staff:
             raise PermissionDenied
     pending_requests = Request.objects.filter(status='pending').order_by('-created_at')
-    context={"request_obj":pending_requests}
+    context={"pending_requests":pending_requests}
 
     return render(request, 'inventory/issue_requests.html', context)
 
-
+"""Логика для проверки и выдачи расходника"""
+@user_passes_test(lambda u:u.is_staff,login_url='/login/') ##Проверяет: является ли пользователь админом
 def issue_request(request,request_id):
-    issue_request_obj = get_object_or_404(Request, id=request_id)
-    if request.method=="POST":
-        request.Сonsumable.quantity>=request.quantity
-        сonsumable.quantity-=request.quantity
-        status='issued'
+    issue=get_object_or_404(Request,id=request_id) #Получение заявки
+
+    """Это защита от параллельных действий и повторных запросов."""
+    if issue.status != 'pending':
+        messages.warning(request,'Этот запрос уже обработан.')
+        return redirect('issue_requests')
+
+    """Обработка GET  - запроса"""
+    if request.method=="GET":
+        return render(request,'inventory/confirm_issue.html',{"issue":issue})
+
+    """Обработка POST запроса"""
+    if request.method=='POST':
+        consumable=issue.consumable
+        requested_qty=issue.quantity
+
+        """Проверка остатка"""
+        if consumable.quantity < requested_qty:
+            messages.error(request,f"Недостаточно остатка!:{consumable.quantity}")
+            return redirect('issue_requests')
+
+        """Изменение данных"""
+        consumable.quantity -= requested_qty
         consumable.save()
-        request.save()
+
+        issue.status= 'issued'
+        issue.issued_by=request.user
+        issue.save()
+
+        messages.success(request,f'Выдано : {requested_qty}  "{consumable.name}"')
+        return redirect('issue_requests')
