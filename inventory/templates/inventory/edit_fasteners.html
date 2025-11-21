@@ -1,10 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "inventory/base.html" %}
+
+{% block title %}Редактировать {{ fastener.name }}{% endblock %}
+
+{% block content %}
+<h1>Редактировать "{{ fastener.name }}"</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+    </div>
+    <div class="mb-3">
+        {{ form.quantity.label_tag }}
+        {{ form.quantity }}
+    </div>
+    <div class="mb-3">
+        {{ form.min_quantity.label_tag }}
+        {{ form.min_quantity }}
+    </div>
+    <div class="mb-3">
+        {{ form.link.label_tag }}
+        {{ form.link }}
+    </div>
+    <div class="mb-3">
+        {{ form.description.label_tag }}
+        {{ form.description }}
+    </div>
+    <button type="submit" class="btn btn-success">Сохранить изменения</button>
+    <a href="{% url 'fasteners_list' %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

@@ -1,10 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "inventory/base.html" %}
+
+{% block title %}История выдачи{% endblock %}
+
+{% block content %}
+  <h1>История выдачи</h1>
+
+  {% if history_list %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Расходник</th>
+          <th>Количество</th>
+          <th>Дата выдачи</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in history_list %}
+          <tr>
+            <td>{{ item.consumable.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.issued_at|date:"d.m.Y H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-muted">У вас ещё не было выдач.</p>
+  {% endif %}
+
+  <a href="{% url 'section_selection' %}" class="btn btn-secondary">Назад</a>
+{% endblock %}

@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "inventory/base.html" %}
+
+{% block title %}Удалить {{ fastener.name }}?{% endblock %}
+
+{% block content %}
+<h1>Подтверждение удаления</h1>
+<p>Вы уверены, что хотите удалить расходник <strong>"{{ fasteners.name }}"</strong>?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Да, удалить</button>
+    <a href="{% url 'fasteners_list' %}" class="btn btn-secondary">Нет,я передумал</a>
+</form>
+{% endblock %}

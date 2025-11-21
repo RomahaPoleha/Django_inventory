@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Consumable, Request, Issue
+from .models import Consumable, Request, Issue,Fasteners
 
 """Подключение админки для отоброжения БД"""
 @admin.register(Consumable) #Декоратор, который регистрирует модель Consumable в административной панели Django.
@@ -20,3 +20,11 @@ class IssueAdmin(admin.ModelAdmin):
     list_filter = ('issued_at', 'consumable')
     search_fields = ('issued_to__username', 'consumable__name')
     readonly_fields = ('issued_at',) #чтобы нельзя было случайно изменить дату
+
+"""Подключение админки для отоброжения БД"""
+@admin.register(Fasteners) #Декоратор, который регистрирует модель Consumable в административной панели Django.
+class FastenerAdmin(admin.ModelAdmin):
+    list_display = ('name','quantity','min_quantity','link','image') # Указывает, какие поля модели отображать в виде столбцов(админка)
+    list_filter = ('name',) # Добавляет боковую панель фильтров в админке.
+    search_fields = ('name',) # Это включает поисковую строку в верхней части списка, позволяя искать записи по полям name и description.
+    ordering = ('name',) # Задаёт стандартную сортировку записей в списке админки — по полю name по возрастанию.
