@@ -1,0 +1,84 @@
+<!-- inventory/main_list.html -->
+{% extends "inventory/base.html" %}
+
+{% block title %}Главная — Учёт{% endblock %}
+
+{% block content %}
+<h1>Крепёж</h1>
+<form method="get" class="mb-4">
+  <div class="input-group">
+    <input type="text" name="q" value="{{ request.GET.q }}"
+           class="form-control" placeholder="Поиск по названию, описанию...">
+    <button class="btn btn-outline-secondary" type="submit"> Найти</button>
+  </div>
+</form>
+
+{% if items %}
+  <div class="row">
+    {% for item in items %}
+      <div class="col-md-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+          {% if item.image %}
+            <a href="#" onclick="openModal('{{ item.image.url }}', '{{ item.name }}'); return false;">
+              <img src="{{ item.image.url }}" class="img-fluid rounded mb-2" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain; cursor: zoom-in;">
+            </a>
+          {% else %}
+            <div class="text-muted mb-2">📷 Без изображения</div>
+          {% endif %}
+
+            <h5 class="card-title">Наименование: {{ item.name }}</h5>
+            <p class="card-text">
+              <p class="card-text">
+              <strong>
+                <span {% if item.quantity <= item.min_quantity %}style="color: red; font-weight: bold;"{% endif %}>
+                  Количество:
+                </span>
+              </strong>
+              <span {% if item.quantity <= item.min_quantity %}style="color: red; font-weight: bold;"{% endif %}>
+                {{ item.quantity }}
+              </span>
+              <br>
+              <strong>Минимальный остаток:</strong> {{ item.min_quantity}}<br>
+              <strong>Ссылка на закуп:</strong> {{ item.link }}<br>
+              {% if item.description %}
+                <strong>Описание:</strong> {{ item.description }}
+              {% else %}
+                <em>Без описания</em>
+              {% endif %}
+            </p>
+
+            <!-- Форма запроса -->
+            <form method="post" action="{% url 'create_request' item.pk %}">
+              {% csrf_token %}
+              <div class="input-group mb-2">
+                <label class="input-group-text" for="quantity_{{ item.pk }}">Кол-во</label>
+                <input type="number" name="quantity" min="1" max="{{ item.quantity }}" id="quantity_{{ item.pk }}" class="form-control" placeholder="Введите количество">
+              </div>
+              <button type="submit" class="btn btn-sm btn-primary">Запросить</button>
+            </form>
+
+            <!-- Кнопки администратора, если нужно -->
+            {% if user.is_staff %}
+            <div class="mt-2">
+              <a href="{% url 'edit_fasteners' item.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a>
+              <a href="{% url 'delete_fasteners' item.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+            </div>
+            {% endif %}
+
+          </div> <!-- card-body -->
+        </div> <!-- card -->
+      </div> <!-- col-md-6 -->
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">
+    {% if query %}
+      Ничего не найдено по запросу "{{ query }}".
+    {% else %}
+      Нет крепежа.
+    {% endif %}
+  </p>
+{% endif %}
+
+{% endblock %}

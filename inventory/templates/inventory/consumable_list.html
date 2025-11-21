@@ -55,7 +55,7 @@
               <a href="{% url 'create_request' item.pk %}" class="btn btn-sm btn-outline-primary">Запрос на выдачу</a>
               {% endif %}
               {% if user.is_staff %}
-              <a href="{% url 'edit_consumable' item.pk %}" class="btn btn-sm btn-outline-primary">Изменить</a>
+              <a href="{% url 'edit_consumable' item.pk  %}" class="btn btn-sm btn-outline-primary">Изменить</a>
               <a href="{% url 'delete_consumable' item.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
               {% endif %}
             </div>
