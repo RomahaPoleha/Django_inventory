@@ -61,13 +61,16 @@
             </p>
 
             <!-- Форма запроса -->
-            <form method="post" action="{% url 'create_request_fasteners' item.pk %}">
+            <!-- Для КРЕПЕЖА -->
+            <form method="post" action="{% url 'create_request_fasteners' item.pk %}?next={{ request.get_full_path|urlencode }}">
               {% csrf_token %}
               <div class="input-group mb-2">
                 <label class="input-group-text" for="quantity_{{ item.pk }}">Кол-во</label>
                 <input type="number" name="quantity" min="1" max="{{ item.quantity }}" id="quantity_{{ item.pk }}" class="form-control" placeholder="Введите количество">
               </div>
+              {% if not user.is_staff %}
               <button type="submit" class="btn btn-sm btn-primary">Запросить</button>
+              {% endif %}
             </form>
 
             <!-- Кнопки администратора, если нужно -->

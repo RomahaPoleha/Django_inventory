@@ -1,13 +1,11 @@
-{% extends "inventory/base.html" %}
-{% block content %}
-  <h2>Подтверждение выдачи</h2>
-  <p>Выдать <strong>{{ issue.quantity }}</strong> {{ issue.consumable.unit }} 
-     наименование «<strong>{{ issue.consumable.name }}</strong>»
-     пользователю <strong>{{ issue.requested_by.username }}</strong>?</p>
 
-  <form method="post">
+<h2>Подтвердить выдачу</h2>
+<p><strong>Товар:</strong> {{ item.name }}</p>
+<p><strong>Количество:</strong> {{ issue.quantity }}</p>
+<p><strong>Запросил:</strong> {{ issue.requested_by.username }}</p>
+
+<form method="post">
     {% csrf_token %}
-    <button type="submit" class="btn btn-success">✅ Да, выдать</button>
+    <button type="submit" class="btn btn-success">Подтвердить выдачу</button>
     <a href="{% url 'issue_requests' %}" class="btn btn-secondary">Отмена</a>
-  </form>
-{% endblock %}
+</form>

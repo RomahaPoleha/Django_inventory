@@ -51,9 +51,17 @@
               {% endif %}
             </p>
             <div class="mt-3">
-              {% if user.is_authenticated and not user.is_staff %}
-              <a href="{% url 'create_request' item.pk %}" class="btn btn-sm btn-outline-primary">Запрос на выдачу</a>
+
+            <form method="post" action="{% url 'create_request' item.pk %}?next={{ request.get_full_path|urlencode }}">
+              {% csrf_token %}
+              <div class="input-group mb-2">
+                <label class="input-group-text" for="quantity_{{ item.pk }}">Кол-во</label>
+                <input type="number" name="quantity" min="1" max="{{ item.quantity }}" id="quantity_{{ item.pk }}" class="form-control" placeholder="Введите количество">
+              </div>
+              {% if not user.is_staff %}
+              <button type="submit" class="btn btn-sm btn-primary">Запросить</button>
               {% endif %}
+            </form>
               {% if user.is_staff %}
               <a href="{% url 'edit_consumable' item.pk  %}" class="btn btn-sm btn-outline-primary">Изменить</a>
               <a href="{% url 'delete_consumable' item.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>

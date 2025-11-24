@@ -1,15 +1,12 @@
-
 from django.shortcuts import render, redirect, get_object_or_404 # render отображает шаблон, redirect -перенаправляет после Post
 from datetime import datetime
-from .models import Consumable, Request,Fasteners,Issue # Мои модели из текущего приложения.
-from .forms import ConsumableForm, RequestForm,FastenersForm
+from .models import Consumable, Request,Fasteners,Issue
+from .forms import ConsumableForm, FastenersForm, QuantityForm
 from django.contrib import messages #Система flash-сообщений: «Выдано!», «Ошибка!».
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, user_passes_test #user_passes_test - встроенный декоратор Django для проверки произвольного условия на пользователе.
-from django.core.exceptions import PermissionDenied
-
-@login_required
+from urllib.parse import unquote
 
 #История для пользователей
 def history(request):
@@ -105,70 +102,74 @@ def delete_consumable(request,pk):
 
 # Запрос на выдачу из таблицы "Платы" (Consumable)
 @login_required
-def create_request(request,consumable_id):
+def create_request(request, consumable_id):
     consumable = get_object_or_404(Consumable, id=consumable_id)
-    if request.method=="POST":
-        form=RequestForm(request.POST)
+    if request.method == "POST":
+        form = QuantityForm(request.POST)  # ← новая форма
         if form.is_valid():
-            request_obj=form.save(commit=False)
-            request_obj.consumable=consumable
-            request_obj.requested_by=request.user
-            request_obj.save()
-            messages.success(request, f"Запрос успешно отправлен")
-        return render(request, 'inventory/request_form.html', {'form': form, 'consumable': consumable})
-    else:
-        form=RequestForm()
-        return render(request, 'inventory/request_form.html', {'form': form, 'consumable': consumable})
+            Request.objects.create(
+                consumable=consumable,
+                requested_by=request.user,
+                quantity=form.cleaned_data['quantity'],
+                status='pending'
+            )
+            messages.success(request, f"Запрос на '{consumable.name}' отправлен!")
+        else:
+            messages.error(request, "Ошибка: укажите корректное количество.")
+        next_url = request.GET.get('next')
+        return redirect(unquote(next_url)) if next_url else redirect('consumables_list')
+    return redirect('consumables_list')
 
-# Логика для получения запрососв от пользователей
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def issue_requests(request):
-    if not request.user.is_staff:
-            raise PermissionDenied
-    pending_requests = Request.objects.filter(status='pending').order_by('-created_at')
-    context={"pending_requests":pending_requests}
+    pending_requests = Request.objects.filter(status='pending').select_related(
+        'consumable', 'fastener', 'requested_by'
+    ).order_by('-created_at')
+    return render(request, 'inventory/issue_requests.html', {
+        'pending_requests': pending_requests
+    })
 
-    return render(request, 'inventory/issue_requests.html', context)
+@user_passes_test(lambda u: u.is_staff, login_url='/login/')
+def issue_request(request, request_id):
+    req = get_object_or_404(Request, id=request_id)
 
-"""Логика для проверки и выдачи расходника"""
-@user_passes_test(lambda u:u.is_staff,login_url='/login/') ##Проверяет: является ли пользователь админом
-def issue_request(request,request_id):
-    issue=get_object_or_404(Request,id=request_id) #Получение заявки
-
-    """Это защита от параллельных действий и повторных запросов."""
-    if issue.status != 'pending':
-        messages.warning(request,'Этот запрос уже обработан.')
+    # Защита от повторной обработки
+    if req.status != 'pending':
+        messages.warning(request, 'Этот запрос уже обработан.')
         return redirect('issue_requests')
 
-    """Обработка GET  - запроса"""
-    if request.method=="GET":
-        return render(request,'inventory/confirm_issue.html',{"issue":issue})
+    # Определяем, с каким типом мы работаем
+    item = req.consumable or req.fastener  # ← Получаем НЕ None объект
 
-    """Обработка POST запроса"""
-    if request.method=='POST':
-        consumable=issue.consumable
-        requested_qty=issue.quantity
+    if request.method == "GET":
+        return render(request, 'inventory/confirm_issue.html', {"issue": req, "item": item})
 
-        """Проверка остатка"""
-        if consumable.quantity < requested_qty:
-            messages.error(request,f"Недостаточно остатка!:{consumable.quantity}")
+    if request.method == "POST":
+        # Проверка остатка
+        if item.quantity < req.quantity:
+            messages.error(request, f"Недостаточно остатка! Доступно: {item.quantity}")
             return redirect('issue_requests')
 
-        """Изменение данных"""
-        consumable.quantity -= requested_qty
-        consumable.save()
+        # Списываем количество
+        item.quantity -= req.quantity
+        item.save()
 
-        issue.status= 'issued'
-        issue.issued_by=request.user
+        # Создаём запись в истории (Issue)
         Issue.objects.create(
-            consumable=consumable,
-            issued_to=issue.requested_by,
-            quantity=requested_qty,
+            consumable=req.consumable,  # будет None, если крепёж
+            fastener=req.fastener,      # будет None, если плата
+            issued_to=req.requested_by,
+            quantity=req.quantity,
             issued_by=request.user
         )
-        issue.save()
 
+        # Обновляем статус запроса
+        req.status = 'issued'
+        req.issued_by = request.user
+        req.save()
 
-        messages.success(request,f'Выдано : {requested_qty}  "{consumable.name}"')
+        messages.success(request, f'Выдано: {req.quantity} шт. "{item.name}"')
         return redirect('issue_requests')
 
 
@@ -237,18 +238,23 @@ def fasteners(request):
     return render(request, "inventory/fastener_list.html", context)
 
 
-#Функция для запроса Крепежа(Пока не работает)
+
+
 @login_required
 def create_request_fasteners(request, pk):
     fastener = get_object_or_404(Fasteners, pk=pk)
     if request.method == "POST":
-        form = RequestForm(request.POST)
+        form = QuantityForm(request.POST)  # ← та же форма!
         if form.is_valid():
-            request_obj = form.save(commit=False)
-            request_obj.fastener = fastener
-            request_obj.requested_by = request.user
-            request_obj.save()
-            messages.success(request, f"Запрос успешно отправлен")
+            Request.objects.create(
+                fastener=fastener,
+                requested_by=request.user,
+                quantity=form.cleaned_data['quantity'],
+                status='pending'
+            )
+            messages.success(request, f"Запрос на крепёж '{fastener.name}' отправлен!")
         else:
-            messages.error(request, "Ошибка в заполнении формы.")
-    return redirect('fastener_list')
+            messages.error(request, "Ошибка: укажите корректное количество.")
+        next_url = request.GET.get('next')
+        return redirect(unquote(next_url)) if next_url else redirect('fasteners_list')
+    return redirect('fasteners_list')

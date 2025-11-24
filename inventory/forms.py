@@ -15,18 +15,12 @@ class ConsumableForm(forms.ModelForm):
             'model':forms.TextInput(attrs={'class':'form-control'})
         }
 
-class RequestForm(forms.ModelForm):
-    class Meta:
-        model=Request
-        fields=['quantity']
 
-        widgets={'quantity':forms.NumberInput(attrs={'class':'form-control','min':'1'})}
-
-    def clean_quantity(self): #clean_quantity — это метод, который Django вызывает при валидации поля quantity
-        quantity=self.cleaned_data['quantity']
-        if quantity <=0:
-            raise forms.VAlidationError("Количество должно быть больше нуля.")
-        return quantity
+class QuantityForm(forms.Form):
+    quantity = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '1'})
+    )
 
 class FastenersForm(forms.ModelForm):
     class Meta:

@@ -9,18 +9,40 @@
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>Расходник</th>
+          <th>Тип</th>
+          <th>Наименование</th>
+          <th>Модель</th>
+          <th>Модификация</th>
           <th>Количество</th>
+          <th>Получил</th>
           <th>Дата выдачи</th>
         </tr>
       </thead>
       <tbody>
         {% for item in history_list %}
+          {% with real_item=item.get_item %}
           <tr>
-            <td>{{ item.consumable.name }}</td>
+            <td>
+              {% if item.consumable %}Плата{% else %}Крепёж{% endif %}
+            </td>
+            <td>{{ real_item.name }}</td>
+            <td>
+              {% if item.consumable %}
+                {{ real_item.model|default:"—" }}
+              {% endif %}
+            </td>
+            <td>
+              {% if item.consumable %}
+                {{ real_item.modification|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
             <td>{{ item.quantity }}</td>
+            <td>{{ item.issued_to.username }}</td>
             <td>{{ item.issued_at|date:"d.m.Y H:i" }}</td>
           </tr>
+          {% endwith %}
         {% endfor %}
       </tbody>
     </table>

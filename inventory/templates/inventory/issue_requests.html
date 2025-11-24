@@ -5,14 +5,16 @@
   <h1> Активные запросы </h1>
 
 
-{% for pending_request in pending_requests %}
+{% for req in pending_requests %}
   <div class="card mb-3">
     <div class="card-body">
-      <h5>Запрос от {{ pending_request.requested_by.username }}</h5>
-      <p><strong>Наименование:</strong> {{ pending_request.consumable.name }}</p>
-      <p><strong>Количество:</strong> {{ pending_request.quantity }}</p>
-      <p><small>Дата запроса: {{ pending_request.created_at|date:"d.m.Y H:i" }}</small></p>
-      <a href="{% url 'issue_request' pending_request.id %}" class="btn btn-success">Выдать</a>
+      {% if req.consumable %}
+        <h5>Плата: {{ req.consumable.name }} ({{ req.consumable.modification|default:"—" }})</h5>
+      {% elif req.fastener %}
+        <h5>Крепёж: {{ req.fastener.name }}</h5>
+      {% endif %}
+      <p>Запросил: {{ req.requested_by.username }} | Кол-во: {{ req.quantity }}</p>
+      <a href="{% url 'issue_request' req.id %}" class="btn btn-primary">Выдать</a>
     </div>
   </div>
 {% endfor %}
