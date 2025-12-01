@@ -4,9 +4,16 @@
 
 {% block content %}
   <h1>Выбирите нужный вам раздел</h1>
+<!--  <h2>Загрузить расходники через API</h2>-->
+<!--  <button id="load-api" class='btn btn-primary'> Показать список (через API)</button>-->
+<!--  <div id="api-result" class="mt-3"></div>-->
+<!--  {% load static %}-->
+<!--  <script src="{% static 'js/api.js' %}"></script>-->
   <div class="list-group">
     <a href="{% url 'consumables_list' %}" class="list-group-item list-group-item-action"> Ремонт оборудования </a>
     <a href="{% url 'fasteners_list' %}" class="list-group-item list-group-item-action">Расходные материалы для монтажа</a>
     <a href="#" class="list-group-item list-group-item-action">Комплекты</a>
   </div>
+
 {% endblock %}
+

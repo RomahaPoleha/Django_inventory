@@ -1,0 +1,21 @@
+.my-custom-navbar {
+    background-color: #4a6fa5 !important;
+    border-bottom: 3px solid #2c3e50;
+}
+
+.my-custom-navbar .navbar-brand {
+    color: white !important;
+    font-weight: bold;
+}
+
+.my-custom-navbar .navbar-brand:hover {
+    color: #ffcc00 !important;
+}
+.my-banner {
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-n)j5l2dj2rp)6*14nko9d&p!#jso4!oorhoc*c#!2cgx%la#0$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'inventory'
+    'rest_framework',
+    'drf_spectacular',
+    'inventory',
+
+
 ]
 
 MIDDLEWARE = [
@@ -129,3 +133,52 @@ LOGIN_REDIRECT_URL = '/'        # после входа — на главную
 LOGOUT_REDIRECT_URL = '/'       # после выхода — тоже на главную
 LOGIN_URL = '/login/'           # сюда переходить, если не авторизован
 APPEND_SLASH = True
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Логирование (Базовый Шаблон)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/django.log',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+"""Эта настройка применяется ко всем API-эндпоинтам по умолчанию. """
+# Защита API
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_ClASSES' : [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT-PERMISSION_CLASSES':[
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# Документация API с помощью Swagger
+SPECTACULAR_SETTINGS = {
+    'TITLE' : 'Система учета расходников API',
+    'DESCRIPTION' : 'API для управления расходниками, запросами и выдачей',
+    'VERSION' : '1.0.0',
+    'SERVE_INCVLUDE_SCHEMA': False,
+}

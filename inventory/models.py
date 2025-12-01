@@ -20,7 +20,8 @@ class Consumable(models.Model):
 
     class Meta:
         verbose_name="Запчасть для ремонта" # Задаёт человекочитаемое название модели в единственном числе(админка)
-        verbose_name_plural="Запчасти для ремонта" #Задаёт человекочитаемое название модели в единственном числе(админка)
+        verbose_name_plural="Запчасти для ремонта" #Задаёт человекочитаемое название модели в множественном числе(админка)
+        ordering = ['name']
 
 """Таблица для храннения всего Крепежа"""
 class Fasteners(models.Model):
@@ -37,7 +38,7 @@ class Fasteners(models.Model):
     class Meta:
         verbose_name = "Крепёж"
         verbose_name_plural="Крепежи"
-
+        ordering = ['name']
 
 """Определяем модель Django под названием Request, которая будет представлять таблицу в базе данных c выдаными расходниками"""
 class Request(models.Model):
@@ -105,3 +106,8 @@ class Issue(models.Model):
 
 
 
+# class Мanufacturing(models.Model):
+#     name = models.CharField("Имя", max_length=100)
+#     quantity = models.PositiveIntegerField("Количество")
+#     image = models.ImageField("Картинка", upload_to='manufacturing/', blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)

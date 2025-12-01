@@ -7,9 +7,14 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, user_passes_test #user_passes_test - встроенный декоратор Django для проверки произвольного условия на пользователе.
 from urllib.parse import unquote
+from rest_framework import generics
+from .serializers import ConsumableSerializer, IssueSerializer  # Импортируем из serializers.py созданый класс для API
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
-#История для пользователей
+@login_required
 def history(request):
+    """Позволяет авторезированному пользователю (кроме админа)
+    видеть свои полученные платы/расходники"""
     history_list = Issue.objects.filter(
         issued_to=request.user
     ).order_by('-issued_at')
@@ -18,14 +23,13 @@ def history(request):
         'history_list': history_list
     })
 
-# История для админа
+
 @login_required
 def history_admin(request):
+    """Позволяет админу видеть список выданных плат/расходников у всех имеющихся пользоваетелей"""
     if not request.user.is_staff:
         return redirect('section_selection')  # или 403
-
     history_list = Issue.objects.all().order_by('-issued_at')  # все выдачи, не только текущего юзера
-
     return render(request, 'inventory/history.html', {
         'history_list': history_list
     })
@@ -237,9 +241,6 @@ def fasteners(request):
     }
     return render(request, "inventory/fastener_list.html", context)
 
-
-
-
 @login_required
 def create_request_fasteners(request, pk):
     fastener = get_object_or_404(Fasteners, pk=pk)
@@ -258,3 +259,20 @@ def create_request_fasteners(request, pk):
         next_url = request.GET.get('next')
         return redirect(unquote(next_url)) if next_url else redirect('fasteners_list')
     return redirect('fasteners_list')
+
+
+class ConsumableListAPIView(generics.ListAPIView): #ListAPIView  готовый класс DRF для только чтения списка.
+    """API-view"""
+    # permission_classes = [IsAuthenticated] #- Разрешает доступ к API только вошедшим
+    # permission_classes = [AllowAny] -Разрешить публичный доступ к списку расходников одни эндпоинты — публичные, другие — защищённые.  (без отклчючения защиты в настройках_
+    permission_classes = [AllowAny]
+    queryset = Consumable.objects.all()
+    serializer_class = ConsumableSerializer # Ссылка из файла  serializers.py
+
+class IssueListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]  # только для авторизованных
+    serializer_class = IssueSerializer
+
+    def get_queryset(self):
+        # Пользователь видит только свою историю
+        return Issue.objects.filter(issued_to=self.request.user)
