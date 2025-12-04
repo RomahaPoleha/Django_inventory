@@ -3,6 +3,10 @@ from django.urls import path
 from .views import ConsumableListAPIView,IssueListAPIView
 
 urlpatterns=[
+    path('delete_manufacturing/<int:pk>/',views.delete_manufacturing,name='delete_manufacturing'),
+    path("add_manufacturing/",views.add_manufacturing, name='add_manufacturing'),
+    path("edit_request_manufacturing/<int:pk>/",views.edit_manufacturing, name='edit_manufacturing'),
+    path("manufacturing_list/", views.manufacturing_list, name="manufacturing_list"),
     path('api/history/', IssueListAPIView.as_view(), name='issue-list-api'),
     path('create_request/<int:consumable_id>/', views.create_request, name='create_request'),
     path('create_request_fasteners/<int:pk>/', views.create_request_fasteners, name='create_request_fasteners'),

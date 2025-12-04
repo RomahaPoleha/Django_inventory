@@ -1,10 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "inventory/base.html" %}
+
+{% block title %}Главная — Учёт{% endblock %}
+
+{% block content %}
+<h1>Материалы для изготовления оборудования</h1>
+<form method="get" class="mb-4">
+<form method="get" class="mb-4">
+  <div class="input-group">
+    <input type="text" name="q" value="{{ request.GET.q }}"
+           class="form-control" placeholder="Поиск по названию, описанию...">
+    <button class="btn btn-outline-secondary" type="submit"> Найти</button>
+  </div>
+</form>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'section_selection' %}"></a>
+            <div class="navbar-nav">
+              {% if user.is_staff %}
+                <a class ='nav-link' href="{% url 'add_manufacturing' %}">Добавить новую позицию</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+
+{% if page_obj%}
+  <div class="row">
+    {% for item in page_obj %}
+      <div class="col-md-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+          {% if item.image %}
+  <!-- Миниатюра -->
+          <a href="#" onclick="openModal('{{ item.image.url }}', '{{ item.name }}'); return false;">
+            <img src="{{ item.image.url }}" class="img-fluid rounded mb-2" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain; cursor: zoom-in;">
+           </a>
+          {% else %}
+            <div class="text-muted mb-2">📷 Без изображения</div>
+          {% endif %}
+
+            <h5 class="card-title">Наименование: {{ item.name }}</h5>
+            <p class="card-text">
+              <strong>Количество:</strong> {{ item.quantity }}<br>
+              {% if item.description %}
+                <strong>Описание:</strong> {{ item.description }}
+              {% else %}
+                <em>Без описания</em>
+              {% endif %}
+            </p>
+            <div class="mt-3">
+              {% if user.is_staff %}
+              <a href="{% url 'edit_manufacturing' item.pk  %}" class="btn btn-sm btn-outline-primary">Изменить</a>
+              <a href="{% url 'delete_manufacturing' item.pk %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+              {% endif %}
+            </div>
+          </div> <!-- card-body -->
+        </div> <!-- card -->
+      </div> <!-- col-md-6 -->
+    {% endfor %}
+    <!-- Добавить после закрывающего </div> от .row -->
+{% if page_obj.has_other_pages %}
+  <nav aria-label="Страницы">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}">Первая</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Назад</a>
+        </li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Вперёд</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Последняя</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+  </div>
+{% else %}
+  <p class="text-muted">
+    {% if query %}
+      Ничего не найдено по запросу "{{ query }}".
+    {% else %}
+      Нет расходников. Добавьте их через <a href="/admin/inventory/consumable/">админку</a>.
+    {% endif %}
+  </p>
+{% endif %}
+
+{% endblock %}

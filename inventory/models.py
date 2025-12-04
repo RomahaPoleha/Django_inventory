@@ -106,8 +106,16 @@ class Issue(models.Model):
 
 
 
-# class Мanufacturing(models.Model):
-#     name = models.CharField("Имя", max_length=100)
-#     quantity = models.PositiveIntegerField("Количество")
-#     image = models.ImageField("Картинка", upload_to='manufacturing/', blank=True, null=True)
-#     description = models.TextField(blank=True, null=True)
+class Manufacturing(models.Model):
+    name = models.CharField("Имя", max_length=100)
+    quantity = models.PositiveIntegerField("Количество")
+    image = models.ImageField("Картинка", upload_to='manufacturing/', blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} {self.quantity}"
+
+    class Meta:
+        verbose_name = "Изготовление"
+        verbose_name_plural="Изготовление"
+        ordering = ['name']

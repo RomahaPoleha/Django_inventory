@@ -1,7 +1,8 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404 # render отображает шаблон, redirect -перенаправляет после Post
 from datetime import datetime
-from .models import Consumable, Request,Fasteners,Issue
-from .forms import ConsumableForm, FastenersForm, QuantityForm
+from .models import Consumable, Request,Fasteners,Issue, Manufacturing
+from .forms import ConsumableForm, FastenersForm, QuantityForm,ManufacturingForm
 from django.contrib import messages #Система flash-сообщений: «Выдано!», «Ошибка!».
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -34,8 +35,9 @@ def history_admin(request):
         'history_list': history_list
     })
 
-#Домашняя страница с выводом данных из таблицы (Consumable)
+
 def consumable_list(request): #принимающее объект request (HTTP-запрос от пользователя).
+    """Домашняя страница с выводом данных из таблицы (Consumable)"""
     query = request.GET.get('q', '').strip() # Получает значение параметра q из GET-запроса
     if query: # Проверяет, ввёл ли пользователь непустой поисковый запрос.
         consumables = Consumable.objects.filter( #Выполняет поиск по нескольким полям
@@ -57,13 +59,14 @@ def consumable_list(request): #принимающее объект request (HTTP
         "current_date":datetime.now().strftime("%d.%m.%Y")}
     return render(request, "inventory/consumable_list.html",context) #Возвращает HTTP-ответ, рендеря шаблон inventory/consumable_list.html с переданным контекстом.
 
-#Главная страница таблицы "Платы" (Consumable)
+#Главная страница таблицы "Список Расзделов"
 def section_selection(request):
     return render(request,"inventory/section_selection.html") #Рендеринг = превращение шаблона + данных → в готовую HTML-страницу.
 
-# Добавление наименование в Consumable
+
 @login_required
 def add_consumable(request):
+    """ Добавление новой позиции в таблицу Consumable"""
     if request.method =='POST':# Проверяет, был ли запрос отправлен методом POST (то есть пользователь нажал кнопку «Отправить» в форме).
         form=ConsumableForm(request.POST)  # Создаёт экземпляр формы ConsumableForm, заполняя её данными из POST-запроса (request.POST).
         if form.is_valid(): # Проверяет, корректны ли данные в форме
@@ -78,8 +81,8 @@ def add_consumable(request):
     return render(request, 'inventory/add_consumable.html',{'form':form})
 
 @login_required
-#Функция для редактирования данных в таблице "Платы" (Consumable)
 def edit_consumable(request,pk): #pk — первичный ключ (id) редактируемого объекта, переданный из URL
+    """#Функция для редактирования данных в таблице (Consumable)"""
     consumable=get_object_or_404(Consumable,pk=pk) #Пытается найти в базе данных объект Consumable с указанным pk(Если не найден — автоматически возвращает ошибку 404)
     if request.method=="POST":
         form =ConsumableForm(request.POST,instance=consumable) # instance=consumable — говорит Django: «не создавай новый объект, а обнови этот»
@@ -93,9 +96,10 @@ def edit_consumable(request,pk): #pk — первичный ключ (id) ред
         form =ConsumableForm(instance=consumable)
     return render(request,'inventory/edit_consumable.html', {'form': form, 'consumable': consumable})
 
-#Функция для удаления из таблицы Платы (Consumable)
+
 @login_required
 def delete_consumable(request,pk):
+    """Функция для удаления позиции из таблицы (Consumable)"""
     consumable=get_object_or_404(Consumable,pk=pk)
     if request.method=="POST":
         name=consumable.name
@@ -104,9 +108,10 @@ def delete_consumable(request,pk):
         return redirect("consumables_list")
     return render(request,'inventory/delete_consumable.html', {'consumable': consumable})
 
-# Запрос на выдачу из таблицы "Платы" (Consumable)
+
 @login_required
 def create_request(request, consumable_id):
+    """Функция запроса на выдачу из таблицы (Consumable)"""
     consumable = get_object_or_404(Consumable, id=consumable_id)
     if request.method == "POST":
         form = QuantityForm(request.POST)  # ← новая форма
@@ -178,9 +183,10 @@ def issue_request(request, request_id):
 
 
 
-#Добавить новые данные в таблицу Крепёж (Fasteners)
+
 @login_required
 def add_fastener(request):
+    """Функция для добавления новыех данныех в таблицу (Fasteners)"""
     if request.method =='POST':# Проверяет, был ли запрос отправлен методом POST (то есть пользователь нажал кнопку «Отправить» в форме).
         form=FastenersForm(request.POST)  # Создаёт экземпляр формы ConsumableForm, заполняя её данными из POST-запроса (request.POST).
         if form.is_valid(): # Проверяет, корректны ли данные в форме
@@ -194,9 +200,10 @@ def add_fastener(request):
 
     return render(request, 'inventory/add_fasteners.html',{'form':form})
 
-#Функция для редактирования данных в таблице "Крепёж" (Fasteners)
+
 @login_required
 def edit_fastener(request,pk):
+    """Функция для редактирования данных в таблице (Fasteners)"""
     fastener=get_object_or_404(Fasteners,pk=pk)
     if request.method=="POST":
         form=FastenersForm(request.POST,instance=fastener)
@@ -211,9 +218,10 @@ def edit_fastener(request,pk):
     return render(request,'inventory/edit_fasteners.html', {'form':form,'fastener':fastener})
 
 
-# Функция для удаления данных из таблицы "Крепёж" (Fasteners)
+
 @login_required
 def delete_fastener(request,pk):
+    """Функция для удаления данных из таблицы (Fasteners)"""
     fastener=get_object_or_404(Fasteners,pk=pk)
     if request.method=="POST":
         name = fastener.name
@@ -222,9 +230,10 @@ def delete_fastener(request,pk):
         return redirect("fasteners_list")
     return render(request,'inventory/delete_fasteners.html',{'fastener':fastener})
 
-#Вывод содержимого из таблицы "Крепёж" (Fasteners)
+
 @login_required
 def fasteners(request):
+    """Вывод содержимого из таблицы (Fasteners)"""
     query = request.GET.get('q', '').strip()
     if query:
         items = Fasteners.objects.filter(
@@ -241,8 +250,10 @@ def fasteners(request):
     }
     return render(request, "inventory/fastener_list.html", context)
 
+
 @login_required
 def create_request_fasteners(request, pk):
+    """Функция запроса на выдачу из таблицы (Fasteners)"""
     fastener = get_object_or_404(Fasteners, pk=pk)
     if request.method == "POST":
         form = QuantityForm(request.POST)  # ← та же форма!
@@ -260,7 +271,7 @@ def create_request_fasteners(request, pk):
         return redirect(unquote(next_url)) if next_url else redirect('fasteners_list')
     return redirect('fasteners_list')
 
-
+# Функция для вывода содержимого в API
 class ConsumableListAPIView(generics.ListAPIView): #ListAPIView  готовый класс DRF для только чтения списка.
     """API-view"""
     # permission_classes = [IsAuthenticated] #- Разрешает доступ к API только вошедшим
@@ -269,6 +280,7 @@ class ConsumableListAPIView(generics.ListAPIView): #ListAPIView  готовый 
     queryset = Consumable.objects.all()
     serializer_class = ConsumableSerializer # Ссылка из файла  serializers.py
 
+
 class IssueListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]  # только для авторизованных
     serializer_class = IssueSerializer
@@ -276,3 +288,79 @@ class IssueListAPIView(generics.ListAPIView):
     def get_queryset(self):
         # Пользователь видит только свою историю
         return Issue.objects.filter(issued_to=self.request.user)
+
+
+def manufacturing_list(request): #принимающее объект request (HTTP-запрос от пользователя).
+    """Вывод содержимого из таблицы Manufacturing"""
+    query = request.GET.get('q', '').strip() # Получает значение параметра q из GET-запроса
+    if query: # Проверяет, ввёл ли пользователь непустой поисковый запрос.
+        manufacturing = Manufacturing.objects.filter( #Выполняет поиск по нескольким полям
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        ).order_by('name')
+    else:
+        manufacturing = Manufacturing.objects.all().order_by('name') # Если запрос пустой — загружает все расходники, отсортированные по имени.
+
+    #Пагинация 5 записей на страницу
+    paginator=Paginator(manufacturing,10)
+    page_number=request.GET.get("page")
+    page_obj=paginator.get_page(page_number)
+
+    context={
+        'page_obj':page_obj,
+        'query':query,
+        "current_date":datetime.now().strftime("%d.%m.%Y")}
+    return render(request, "inventory/manufacturing_list.html",context)
+
+
+
+@login_required
+def add_manufacturing(request):
+    """ Добавление новой позиции в таблицу Manufacturing"""
+    if request.method =='POST':# Проверяет, был ли запрос отправлен методом POST (то есть пользователь нажал кнопку «Отправить» в форме).
+        form=ManufacturingForm(request.POST)  # Создаёт экземпляр формы ConsumableForm, заполняя её данными из POST-запроса (request.POST).
+        if form.is_valid(): # Проверяет, корректны ли данные в форме
+            form.save() # Сохраняет данные формы как новую запись в базе данных
+            messages.success(request, f"Расходник  успешно добавлен!") #всплывающее уведомление об успехе
+            return redirect('manufacturing_list') #Перенапровляем на главную (что-бы избежать повторной отправки формы
+        else:
+            messages.error(request,"Пожалуйста исправьте ошибки в форме.") #Если форма не корректна, показывает ошибку в форме
+    else:
+        form=ManufacturingForm()
+
+    return render(request, 'inventory/add_manufacturing.html',{'form':form})
+
+
+@login_required
+def edit_manufacturing(request, pk):
+    """Изменение позиции в таблице Manufacturing"""
+    manufacturing=get_object_or_404(Manufacturing, pk=pk)
+    if request.method == 'POST':
+        form=ManufacturingForm(request.POST,instance=manufacturing)
+        if form.is_valid():
+            messages.success(request,f"{manufacturing.name} успешно обновлён")
+            form.save()
+            return redirect("manufacturing_list")
+        else:
+            messages.error(request,'Не удалось сохранить изменения.Проверте данные')
+    else:
+        form=ManufacturingForm(instance=manufacturing)
+    return render (request,'inventory/edit_manufacturing.html',{'form':form,'manufacturing':manufacturing})
+
+
+@login_required
+def delete_manufacturing(request,pk):
+    manufacturing=get_object_or_404(Manufacturing, pk=pk)
+    if request.method=="POST":
+        name=manufacturing.name
+        manufacturing.delete()
+        messages.success(request, f"{name} успешно обновлён")
+        return redirect('manufacturing_list')
+    return render(request, 'inventory/delete_manufacturing.html',{'manufacturing':manufacturing})
+
+
+def sets(request,pk):
+    with open ("panels_with_sashes.txt", 'r', encoding='utd=utf-8') as file:
+        content = json.load(file)
+    manufacturing=get_object_or_404(Manufacturing,pk=pk)
+    fasteners=get_object_or_404(Fasteners, pk=pk)

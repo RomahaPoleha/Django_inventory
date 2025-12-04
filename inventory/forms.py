@@ -1,5 +1,5 @@
 from django import forms
-from .models import Consumable,Request,Fasteners
+from .models import Consumable,Fasteners,Manufacturing
 
 """Форма для добавления"""
 class ConsumableForm(forms.ModelForm):
@@ -24,7 +24,7 @@ class QuantityForm(forms.Form):
 
 class FastenersForm(forms.ModelForm):
     class Meta:
-        model=Fasteners#  Указывает, что эта форма основана на модели Consumable
+        model=Fasteners#  Указывает, что эта форма основана на модели Fasteners
         fields =["name","quantity",'min_quantity','link','description' ] # Определяет, какие поля модели должны быть включены в форму
         """class="form-control" — CSS-класс из Bootstrap, который делает поле стилизованным (скруглённые углы, отступы, адаптивность и т.д.)."""
         widgets={
@@ -35,3 +35,13 @@ class FastenersForm(forms.ModelForm):
             'link':forms.TextInput(attrs={'class':'form-control'})
         }
 
+class ManufacturingForm(forms.ModelForm):
+    class Meta:
+        model=Manufacturing
+        fields =['name','quantity','description' ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
+            # form-control  настраивают внешний вид полей.
+            "name": forms.TextInput(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+        }
